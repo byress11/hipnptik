@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Hipnoz Spirali - Odaklanma Uygulaması</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .spiral-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #spiralCanvas {
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 80px rgba(255,255,255,0.3);
+            background: #000;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #764ba2;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .value-display {
+            min-width: 45px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-fullwidth {
+            grid-column: 1 / -1;
+        }
+
+        .color-picker-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .color-input-wrapper label {
+            font-size: 0.85em;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .preset-patterns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 8px 12px;
+            font-size: 0.85em;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 3em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .session-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .info-card .label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-card .value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+        }
+
+        .audio-controls input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .fullscreen-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fullscreen-mode.active {
+            display: flex;
+        }
+
+        .fullscreen-mode canvas {
+            max-width: 90vmin;
+            max-height: 90vmin;
+        }
+
+        .exit-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .exit-fullscreen:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .session-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .timer-controls {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .timer-input-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .timer-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .timer-input-wrapper label {
+            font-size: 0.75em;
+            color: #666;
+            text-align: center;
+        }
+
+        .timer-input-wrapper input {
+            padding: 8px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .timer-input-wrapper input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .timer-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .timer-status {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .audio-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-top: 30px;
+        }
+
+        .wave-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .wave-btn {
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .wave-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .wave-btn.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .wave-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wave-freq {
+            font-size: 0.85em;
+            color: #667eea;
+            margin-bottom: 3px;
+        }
+
+        .wave-desc {
+            font-size: 0.8em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .volume-control {
+            margin-top: 20px;
+        }
+
+        .volume-slider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .volume-icon {
+            font-size: 1.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌀 Gelişmiş Hipnoz Spirali</h1>
+            <p>Odaklanma, Meditasyon ve Zihninizi Dinlendirme Uygulaması</p>
+        </div>
+
+        <div class="main-content">
+            <div class="spiral-container">
+                <div class="canvas-wrapper">
+                    <canvas id="spiralCanvas" width="600" height="600"></canvas>
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <h3 style="margin-bottom: 20px; color: #667eea;">⚙️ Kontroller</h3>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="toggleAnimation()">
+                        <span id="playPauseText">▶️ Başlat</span>
+                    </button>
+                    <button class="btn-secondary" onclick="resetSpiral()">🔄 Sıfırla</button>
+                    <button class="btn-primary btn-fullwidth" onclick="toggleFullscreen()">🖥️ Tam Ekran</button>
+                </div>
+
+                <div class="control-group">
+                    <label>Hız</label>
+                    <div class="slider-container">
+                        <input type="range" id="speedSlider" min="1" max="100" value="30">
+                        <span class="value-display" id="speedValue">30</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Spiral Yoğunluğu</label>
+                    <div class="slider-container">
+                        <input type="range" id="densitySlider" min="5" max="50" value="20">
+                        <span class="value-display" id="densityValue">20</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Kalınlık</label>
+                    <div class="slider-container">
+                        <input type="range" id="thicknessSlider" min="1" max="20" value="3">
+                        <span class="value-display" id="thicknessValue">3</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Spiral Tipi</label>
+                    <select id="spiralType" onchange="updateSpiralType()">
+                        <option value="dots">Nokta Spiral</option>
+                        <option value="wormhole">Solucan Deliği</option>
+                    </select>
+                </div>
+
+                <div class="control-group" id="colorModeGroup">
+                    <label>Renk Modu</label>
+                    <select id="colorMode" onchange="updateColorMode()">
+                        <option value="single">Tek Renk</option>
+                        <option value="gradient">Degrade</option>
+                        <option value="rainbow">Gökkuşağı</option>
+                        <option value="psychedelic">Psikedelik</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <div class="color-picker-group">
+                        <div class="color-input-wrapper">
+                            <label>Renk 1</label>
+                            <input type="color" id="color1" value="#00ffff">
+                        </div>
+                        <div class="color-input-wrapper">
+                            <label>Renk 2</label>
+                            <input type="color" id="color2" value="#ff00ff">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Özel Desenler</label>
+                    <div class="preset-patterns">
+                        <button class="preset-btn" onclick="applyPreset('classic')">Klasik</button>
+                        <button class="preset-btn" onclick="applyPreset('calm')">Sakin</button>
+                        <button class="preset-btn" onclick="applyPreset('energetic')">Enerjik</button>
+                        <button class="preset-btn" onclick="applyPreset('deep')">Derin</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <h3 style="color: #667eea;">⏰ Zamanlayıcı</h3>
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            
+            <div class="timer-controls">
+                <div class="timer-input-group">
+                    <div class="timer-input-wrapper">
+                        <label>Saat</label>
+                        <input type="number" id="timerHours" min="0" max="23" value="0" />
+                    </div>
+                    <div class="timer-input-wrapper">
+                        <label>Dakika</label>
+                        <input type="number" id="timerMinutes" min="0" max="59" value="15" />
+                    </div>
+                    <div class="timer-input-wrapper">
+                        <label>Saniye</label>
+                        <input type="number" id="timerSeconds" min="0" max="59" value="0" />
+                    </div>
+                </div>
+                <button class="timer-btn" onclick="setTimer()">Zamanlayıcıyı Ayarla</button>
+                <div class="timer-status" id="timerStatus">Zamanlayıcı ayarlanmadı</div>
+            </div>
+
+            <div class="session-info">
+                <div class="info-card">
+                    <div class="label">Toplam Seans</div>
+                    <div class="value" id="totalSessions">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Bugün</div>
+                    <div class="value" id="todaySessions">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Toplam Süre</div>
+                    <div class="value" id="totalTime">0dk</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="audio-panel">
+            <h3 style="margin-bottom: 15px; color: #667eea;">🎵 Beyin Dalgası Sesleri</h3>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                Binaural beats ile farklı beyin dalgalarını deneyimleyin. Kulaklık kullanmanız önerilir.
+            </p>
+            
+            <div class="wave-buttons">
+                <button class="wave-btn" onclick="setWave('delta')">
+                    <div class="wave-name">💤 Delta</div>
+                    <div class="wave-freq">0.5-4 Hz</div>
+                    <div class="wave-desc">Derin uyku, iyileşme, bilinçaltı</div>
+                </button>
+                
+                <button class="wave-btn" onclick="setWave('theta')">
+                    <div class="wave-name">🌙 Theta</div>
+                    <div class="wave-freq">7.7 Hz</div>
+                    <div class="wave-desc">Meditasyon, yaratıcılık, derin rahatlama</div>
+                </button>
+                
+                <button class="wave-btn" onclick="setWave('alpha')">
+                    <div class="wave-name">🧘 Alpha</div>
+                    <div class="wave-freq">8-14 Hz</div>
+                    <div class="wave-desc">Rahatlamış farkındalık, sakinlik</div>
+                </button>
+                
+                <button class="wave-btn" onclick="setWave('beta')">
+                    <div class="wave-name">⚡ Beta</div>
+                    <div class="wave-freq">14-30 Hz</div>
+                    <div class="wave-desc">Odaklanma, konsantrasyon, uyanıklık</div>
+                </button>
+                
+                <button class="wave-btn" onclick="setWave('gamma')">
+                    <div class="wave-name">🧠 Gamma</div>
+                    <div class="wave-freq">30-100 Hz</div>
+                    <div class="wave-desc">Yüksek bilişsel aktivite, zirve performans</div>
+                </button>
+                
+                <button class="wave-btn" onclick="setWave('none')">
+                    <div class="wave-name">🔇 Sessiz</div>
+                    <div class="wave-freq">Ses yok</div>
+                    <div class="wave-desc">Sesleri kapat</div>
+                </button>
+            </div>
+            
+            <div class="volume-control">
+                <label style="font-weight: 600; color: #333; font-size: 0.95em;">Ses Seviyesi</label>
+                <div class="volume-slider">
+                    <span class="volume-icon">🔉</span>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="30">
+                    <span class="value-display" id="volumeValue">30%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fullscreen-mode" id="fullscreenMode">
+        <canvas id="fullscreenCanvas" width="800" height="800"></canvas>
+        <button class="exit-fullscreen" onclick="toggleFullscreen()">❌ Çıkış</button>
+    </div>
+
+    <script>
+        // Canvas ve Context
+        const canvas = document.getElementById('spiralCanvas');
+        const ctx = canvas.getContext('2d');
+        const fullscreenCanvas = document.getElementById('fullscreenCanvas');
+        const fullscreenCtx = fullscreenCanvas.getContext('2d');
+
+        // Değişkenler
+        let animationId = null;
+        let isAnimating = false;
+        let rotation = 0;
+        let sessionStartTime = null;
+        let currentSessionTime = 0;
+        let timerInterval = null;
+
+        // Zamanlayıcı
+        let targetTime = null;
+        let countdownInterval = null;
+
+        // Ses sistemi (Binaural Beats)
+        let audioContext = null;
+        let leftOscillator = null;
+        let rightOscillator = null;
+        let leftGain = null;
+        let rightGain = null;
+        let masterGain = null;
+        let merger = null;
+        let currentWave = 'none';
+        let volume = 0.3;
+
+        // Beyin dalgası frekansları
+        const waveFrequencies = {
+            delta: { base: 200, beat: 2 },      // 2 Hz beat (0.5-4 Hz arası)
+            theta: { base: 200, beat: 7.7 },    // 7.7 Hz beat (optimal theta frekansı)
+            alpha: { base: 200, beat: 10 },     // 10 Hz beat (8-14 Hz arası)
+            beta: { base: 200, beat: 20 },      // 20 Hz beat (14-30 Hz arası)
+            gamma: { base: 200, beat: 40 }      // 40 Hz beat (30-100 Hz arası)
+        };
+
+        // Ayarlar
+        let speed = 30;
+        let density = 20;
+        let thickness = 3;
+        let spiralType = 'dots';
+        let colorMode = 'single';
+        let color1 = '#00ffff';
+        let color2 = '#ff00ff';
+
+        // Local Storage
+        function loadStats() {
+            const stats = JSON.parse(localStorage.getItem('spiralStats') || '{"total": 0, "today": 0, "totalTime": 0, "lastDate": ""}');
+            const today = new Date().toDateString();
+            
+            if (stats.lastDate !== today) {
+                stats.today = 0;
+                stats.lastDate = today;
+            }
+            
+            document.getElementById('totalSessions').textContent = stats.total;
+            document.getElementById('todaySessions').textContent = stats.today;
+            document.getElementById('totalTime').textContent = Math.floor(stats.totalTime / 60) + 'dk';
+            
+            return stats;
+        }
+
+        function saveStats(stats) {
+            localStorage.setItem('spiralStats', JSON.stringify(stats));
+        }
+
+        // Spiral çizimi
+        function drawSpiral(context, canvasObj) {
+            const width = canvasObj.width;
+            const height = canvasObj.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, width, height);
+            
+            if (spiralType === 'wormhole') {
+                drawWormhole(context, canvasObj);
+            } else {
+                drawDotSpiral(context, canvasObj);
+            }
+        }
+
+        function drawDotSpiral(context, canvasObj) {
+            const width = canvasObj.width;
+            const height = canvasObj.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            context.save();
+            context.translate(centerX, centerY);
+            context.rotate(rotation);
+            
+            const maxRadius = Math.min(width, height) / 2 - 20;
+            const turns = density;
+            const points = turns * 100;
+            
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * turns * Math.PI * 2;
+                const radius = (i / points) * maxRadius;
+                
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                
+                // Renk hesaplama
+                let drawColor;
+                if (colorMode === 'single') {
+                    drawColor = color1;
+                } else if (colorMode === 'gradient') {
+                    const ratio = i / points;
+                    drawColor = interpolateColor(color1, color2, ratio);
+                } else if (colorMode === 'rainbow') {
+                    const hue = (i / points) * 360;
+                    drawColor = `hsl(${hue}, 100%, 50%)`;
+                } else if (colorMode === 'psychedelic') {
+                    const hue = ((i / points) * 360 + rotation * 50) % 360;
+                    const sat = 80 + Math.sin(i * 0.1) * 20;
+                    drawColor = `hsl(${hue}, ${sat}%, 50%)`;
+                }
+                
+                context.fillStyle = drawColor;
+                context.beginPath();
+                context.arc(x, y, thickness, 0, Math.PI * 2);
+                context.fill();
+            }
+            
+            context.restore();
+        }
+
+        function drawWormhole(context, canvasObj) {
+            const width = canvasObj.width;
+            const height = canvasObj.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // Çerçeveyi tamamen kaplamak için
+            const maxRadius = Math.max(width, height) * 0.8;
+            
+            context.save();
+            context.translate(centerX, centerY);
+            
+            // Spiral parametreleri
+            const numArms = 12; // Daha az ama daha geniş kollar
+            const depthLayers = 80; // Daha fazla katman = daha yumuşak derinlik
+            
+            // Ters sırada çiz (dıştaki katmanlar önce, içtekiler üste)
+            for (let layer = depthLayers - 1; layer >= 0; layer--) {
+                const layerProgress = layer / depthLayers;
+                
+                // Gelişmiş perspektif: içe doğru exponansiyel küçülme
+                const depthFactor = Math.pow(layerProgress, 0.6);
+                const currentRadius = maxRadius * depthFactor;
+                
+                // Spiral büküm - içe doğru daha fazla dönüş
+                const spiralTwist = rotation + (depthLayers - layer) * 0.12;
+                
+                // Pulsasyon efekti (nefes alıp verme gibi)
+                const pulse = 1 + Math.sin(rotation * 2 + layer * 0.1) * 0.03;
+                const pulsedRadius = currentRadius * pulse;
+                
+                for (let arm = 0; arm < numArms; arm++) {
+                    const baseAngle = (arm / numArms) * Math.PI * 2;
+                    
+                    // Organik noise benzeri titreşim
+                    const noiseFreq = 0.4;
+                    const noise1 = Math.sin(layer * noiseFreq + arm * 1.5 + rotation * 0.5);
+                    const noise2 = Math.cos(layer * noiseFreq * 0.7 + arm * 2.1 - rotation * 0.3);
+                    const organicWave = (noise1 + noise2) * 0.015 * (1 - depthFactor);
+                    
+                    const finalAngle = baseAngle + spiralTwist + organicWave;
+                    
+                    // Alternatif siyah-beyaz
+                    const isWhite = arm % 2 === 0;
+                    
+                    // Gelişmiş derinlik efektleri
+                    const depthDarkening = Math.pow(1 - depthFactor, 1.5); // İçe doğru koyulaşma
+                    const edgeBrightness = Math.pow(depthFactor, 2) * 50; // Dışa doğru parlaklık
+                    
+                    // Opacity: dış katmanlar net, içtekiler şeffaf
+                    const baseOpacity = 0.85 + depthFactor * 0.15;
+                    
+                    // Renk hesaplama - daha derin kontrast
+                    if (isWhite) {
+                        const whiteLevel = 255 - (depthDarkening * 60) + edgeBrightness;
+                        const warmth = Math.max(0, 20 - depthDarkening * 20); // Hafif sıcak ton
+                        context.fillStyle = `rgba(${whiteLevel}, ${whiteLevel - warmth}, ${whiteLevel - warmth * 2}, ${baseOpacity})`;
+                    } else {
+                        const blackLevel = depthDarkening * 25 + edgeBrightness * 0.3;
+                        context.fillStyle = `rgba(${blackLevel}, ${blackLevel}, ${blackLevel + 10}, ${baseOpacity})`;
+                    }
+                    
+                    // Kol genişliği - perspektife göre değişir
+                    const armWidthBase = (Math.PI * 2 / numArms);
+                    const armWidth = armWidthBase * (0.95 + depthFactor * 0.4);
+                    
+                    // Segment çizimi
+                    context.beginPath();
+                    
+                    const startAngle = finalAngle - armWidth / 2;
+                    const endAngle = finalAngle + armWidth / 2;
+                    
+                    // Bir sonraki katman
+                    const nextLayerFactor = layer > 0 ? Math.pow((layer - 1) / depthLayers, 0.6) : 0;
+                    const nextRadius = maxRadius * nextLayerFactor * pulse;
+                    
+                    // Trapez benzeri segment (perspektif)
+                    context.arc(0, 0, pulsedRadius, startAngle, endAngle);
+                    
+                    if (nextRadius > 0) {
+                        context.arc(0, 0, nextRadius, endAngle, startAngle, true);
+                    } else {
+                        context.lineTo(0, 0);
+                    }
+                    
+                    context.closePath();
+                    context.fill();
+                    
+                    // 3D gölgeleme efekti
+                    if (depthFactor > 0.2) {
+                        const shadowGradient = context.createRadialGradient(
+                            0, 0, pulsedRadius * 0.9,
+                            0, 0, pulsedRadius
+                        );
+                        
+                        if (isWhite) {
+                            shadowGradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                            shadowGradient.addColorStop(1, `rgba(255, 255, 255, ${0.15 * depthFactor})`);
+                        } else {
+                            shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                            shadowGradient.addColorStop(1, `rgba(0, 0, 0, ${0.2 * depthFactor})`);
+                        }
+                        
+                        context.strokeStyle = shadowGradient;
+                        context.lineWidth = 2;
+                        context.stroke();
+                    }
+                }
+            }
+            
+            // Gelişmiş merkez efekti (solucan deliği ağzı) - Yumuşak ve göze rahat
+            // Dış halo - daha yumuşak ve geniş
+            const outerHalo = context.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.3);
+            outerHalo.addColorStop(0, 'rgba(180, 190, 210, 0.4)');  // Daha yumuşak başlangıç
+            outerHalo.addColorStop(0.3, 'rgba(160, 180, 200, 0.25)');
+            outerHalo.addColorStop(0.6, 'rgba(140, 160, 190, 0.12)');
+            outerHalo.addColorStop(0.85, 'rgba(120, 140, 170, 0.05)');
+            outerHalo.addColorStop(1, 'rgba(100, 120, 150, 0)');
+            
+            context.fillStyle = outerHalo;
+            context.beginPath();
+            context.arc(0, 0, maxRadius * 0.3, 0, Math.PI * 2);
+            context.fill();
+            
+            // Orta halka - çok yumuşak geçiş
+            const middleGradient = context.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.12);
+            middleGradient.addColorStop(0, 'rgba(200, 210, 230, 0.5)');
+            middleGradient.addColorStop(0.5, 'rgba(180, 200, 220, 0.3)');
+            middleGradient.addColorStop(0.8, 'rgba(160, 180, 210, 0.15)');
+            middleGradient.addColorStop(1, 'rgba(140, 170, 200, 0)');
+            
+            context.fillStyle = middleGradient;
+            context.beginPath();
+            context.arc(0, 0, maxRadius * 0.12, 0, Math.PI * 2);
+            context.fill();
+            
+            // İç çekirdek - artık gözü yormayan yumuşak bir ışık
+            const coreGradient = context.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.06);
+            coreGradient.addColorStop(0, 'rgba(220, 225, 235, 0.6)');  // Çok daha yumuşak
+            coreGradient.addColorStop(0.4, 'rgba(200, 210, 225, 0.45)');
+            coreGradient.addColorStop(0.7, 'rgba(180, 195, 215, 0.25)');
+            coreGradient.addColorStop(1, 'rgba(160, 180, 205, 0)');
+            
+            context.fillStyle = coreGradient;
+            context.beginPath();
+            context.arc(0, 0, maxRadius * 0.06, 0, Math.PI * 2);
+            context.fill();
+            
+            // Işık halkaları - daha az belirgin, daha yumuşak
+            for (let i = 0; i < 4; i++) {
+                const ringPhase = (rotation * 2 + i * 0.7) % (Math.PI * 2);
+                const ringRadius = maxRadius * (0.05 + i * 0.025) * (1 + Math.sin(ringPhase) * 0.15);
+                const ringOpacity = (0.15 - i * 0.025) * (0.4 + Math.sin(ringPhase) * 0.3);
+                
+                context.strokeStyle = `rgba(180, 200, 220, ${ringOpacity})`;
+                context.lineWidth = 1;
+                context.beginPath();
+                context.arc(0, 0, ringRadius, 0, Math.PI * 2);
+                context.stroke();
+            }
+            
+            // Hafif mavi sis efekti (gözü yormayan)
+            context.shadowBlur = 20;
+            context.shadowColor = 'rgba(160, 180, 210, 0.15)';
+            context.fillStyle = 'rgba(190, 205, 225, 0.08)';
+            context.beginPath();
+            context.arc(0, 0, maxRadius * 0.18, 0, Math.PI * 2);
+            context.fill();
+            context.shadowBlur = 0;
+            
+            context.restore();
+        }
+
+        function interpolateColor(color1, color2, ratio) {
+            const hex1 = color1.replace('#', '');
+            const hex2 = color2.replace('#', '');
+            
+            const r1 = parseInt(hex1.substr(0, 2), 16);
+            const g1 = parseInt(hex1.substr(2, 2), 16);
+            const b1 = parseInt(hex1.substr(4, 2), 16);
+            
+            const r2 = parseInt(hex2.substr(0, 2), 16);
+            const g2 = parseInt(hex2.substr(2, 2), 16);
+            const b2 = parseInt(hex2.substr(4, 2), 16);
+            
+            const r = Math.round(r1 + (r2 - r1) * ratio);
+            const g = Math.round(g1 + (g2 - g1) * ratio);
+            const b = Math.round(b1 + (b2 - b1) * ratio);
+            
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function animate() {
+            rotation += speed / 1000;
+            drawSpiral(ctx, canvas);
+            
+            if (document.getElementById('fullscreenMode').classList.contains('active')) {
+                drawSpiral(fullscreenCtx, fullscreenCanvas);
+            }
+            
+            if (isAnimating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            const playPauseText = document.getElementById('playPauseText');
+            
+            if (isAnimating) {
+                playPauseText.textContent = '⏸️ Duraklat';
+                if (!sessionStartTime) {
+                    sessionStartTime = Date.now();
+                    startTimer();
+                }
+                animate();
+            } else {
+                playPauseText.textContent = '▶️ Devam Et';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            }
+        }
+
+        function resetSpiral() {
+            isAnimating = false;
+            rotation = 0;
+            document.getElementById('playPauseText').textContent = '▶️ Başlat';
+            
+            if (sessionStartTime) {
+                const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+                if (sessionDuration > 10) { // En az 10 saniye
+                    const stats = loadStats();
+                    stats.total++;
+                    stats.today++;
+                    stats.totalTime += sessionDuration;
+                    saveStats(stats);
+                    loadStats();
+                }
+            }
+            
+            sessionStartTime = null;
+            currentSessionTime = 0;
+            document.getElementById('timerDisplay').textContent = '00:00';
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            drawSpiral(ctx, canvas);
+            if (document.getElementById('fullscreenMode').classList.contains('active')) {
+                drawSpiral(fullscreenCtx, fullscreenCanvas);
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (isAnimating && sessionStartTime) {
+                    currentSessionTime = Math.floor((Date.now() - sessionStartTime) / 1000);
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let displayTime;
+            
+            if (targetTime !== null) {
+                // Geri sayım modu
+                const remaining = Math.max(0, targetTime - currentSessionTime);
+                displayTime = remaining;
+                
+                if (remaining === 0 && isAnimating) {
+                    // Süre doldu
+                    playAlertSound();
+                    document.getElementById('timerStatus').textContent = '⏰ Süre doldu!';
+                    document.getElementById('timerStatus').style.background = 'rgba(255, 100, 100, 0.3)';
+                    document.getElementById('timerStatus').style.color = '#ff0000';
+                }
+            } else {
+                // Normal sayaç modu
+                displayTime = currentSessionTime;
+            }
+            
+            const hours = Math.floor(displayTime / 3600);
+            const minutes = Math.floor((displayTime % 3600) / 60);
+            const seconds = displayTime % 60;
+            
+            if (hours > 0) {
+                document.getElementById('timerDisplay').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            } else {
+                document.getElementById('timerDisplay').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+
+        function setTimer() {
+            const hours = parseInt(document.getElementById('timerHours').value) || 0;
+            const minutes = parseInt(document.getElementById('timerMinutes').value) || 0;
+            const seconds = parseInt(document.getElementById('timerSeconds').value) || 0;
+            
+            targetTime = (hours * 3600) + (minutes * 60) + seconds;
+            
+            if (targetTime > 0) {
+                document.getElementById('timerStatus').textContent = 
+                    `⏱️ ${hours}s ${minutes}dk ${seconds}sn için ayarlandı`;
+                document.getElementById('timerStatus').style.background = 'rgba(102, 126, 234, 0.2)';
+                document.getElementById('timerStatus').style.color = '#667eea';
+                
+                if (isAnimating) {
+                    currentSessionTime = 0;
+                    sessionStartTime = Date.now();
+                    updateTimerDisplay();
+                }
+            } else {
+                targetTime = null;
+                document.getElementById('timerStatus').textContent = 'Zamanlayıcı kaldırıldı';
+                document.getElementById('timerStatus').style.background = 'rgba(255, 255, 255, 0.5)';
+                document.getElementById('timerStatus').style.color = '#667eea';
+            }
+        }
+
+        function playAlertSound() {
+            // Basit bir beep sesi oluştur
+            const tempContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = tempContext.createOscillator();
+            const gainNode = tempContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(tempContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, tempContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, tempContext.currentTime + 0.5);
+            
+            oscillator.start(tempContext.currentTime);
+            oscillator.stop(tempContext.currentTime + 0.5);
+        }
+
+        // Binaural Beats Ses Sistemi
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Stereo merger oluştur
+                merger = audioContext.createChannelMerger(2);
+                
+                // Master gain
+                masterGain = audioContext.createGain();
+                masterGain.gain.value = volume;
+                
+                // Bağlantılar
+                merger.connect(masterGain);
+                masterGain.connect(audioContext.destination);
+            }
+        }
+
+        function setWave(waveType) {
+            // Önceki dalgayı durdur
+            stopWave();
+            
+            // Aktif buton stilini güncelle
+            document.querySelectorAll('.wave-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            currentWave = waveType;
+            
+            if (waveType === 'none') {
+                return;
+            }
+            
+            // Aktif butonu işaretle
+            event.target.closest('.wave-btn').classList.add('active');
+            
+            // Audio context'i başlat
+            initAudioContext();
+            
+            const freq = waveFrequencies[waveType];
+            
+            // Sol kulak osilatörü
+            leftOscillator = audioContext.createOscillator();
+            leftGain = audioContext.createGain();
+            leftOscillator.type = 'sine';
+            leftOscillator.frequency.value = freq.base;
+            leftGain.gain.value = 1;
+            leftOscillator.connect(leftGain);
+            leftGain.connect(merger, 0, 0); // Sol kanala bağla
+            
+            // Sağ kulak osilatörü
+            rightOscillator = audioContext.createOscillator();
+            rightGain = audioContext.createGain();
+            rightOscillator.type = 'sine';
+            rightOscillator.frequency.value = freq.base + freq.beat; // Frekans farkı = binaural beat
+            rightGain.gain.value = 1;
+            rightOscillator.connect(rightGain);
+            rightGain.connect(merger, 0, 1); // Sağ kanala bağla
+            
+            // Başlat
+            leftOscillator.start();
+            rightOscillator.start();
+        }
+
+        function stopWave() {
+            if (leftOscillator) {
+                leftOscillator.stop();
+                leftOscillator.disconnect();
+                leftOscillator = null;
+            }
+            if (rightOscillator) {
+                rightOscillator.stop();
+                rightOscillator.disconnect();
+                rightOscillator = null;
+            }
+            if (leftGain) {
+                leftGain.disconnect();
+                leftGain = null;
+            }
+            if (rightGain) {
+                rightGain.disconnect();
+                rightGain = null;
+            }
+        }
+
+        function updateVolume(value) {
+            volume = value / 100;
+            if (masterGain) {
+                masterGain.gain.value = volume;
+            }
+            document.getElementById('volumeValue').textContent = value + '%';
+        }
+
+        function toggleFullscreen() {
+            const fullscreenMode = document.getElementById('fullscreenMode');
+            fullscreenMode.classList.toggle('active');
+            
+            if (fullscreenMode.classList.contains('active')) {
+                drawSpiral(fullscreenCtx, fullscreenCanvas);
+            }
+        }
+
+        function updateColorMode() {
+            colorMode = document.getElementById('colorMode').value;
+        }
+
+        function updateSpiralType() {
+            spiralType = document.getElementById('spiralType').value;
+            
+            // Solucan deliği seçiliyse renk ayarlarını gizle
+            const colorModeGroup = document.getElementById('colorModeGroup');
+            const colorPickerGroups = document.querySelectorAll('.color-picker-group')[0].parentElement;
+            
+            if (spiralType === 'wormhole') {
+                colorModeGroup.style.display = 'none';
+                colorPickerGroups.style.display = 'none';
+            } else {
+                colorModeGroup.style.display = 'block';
+                colorPickerGroups.style.display = 'block';
+            }
+        }
+
+        function applyPreset(preset) {
+            switch(preset) {
+                case 'classic':
+                    document.getElementById('speedSlider').value = 30;
+                    document.getElementById('densitySlider').value = 20;
+                    document.getElementById('thicknessSlider').value = 3;
+                    document.getElementById('spiralType').value = 'dots';
+                    document.getElementById('colorMode').value = 'single';
+                    document.getElementById('color1').value = '#00ffff';
+                    break;
+                case 'calm':
+                    document.getElementById('speedSlider').value = 15;
+                    document.getElementById('densitySlider').value = 30;
+                    document.getElementById('thicknessSlider').value = 2;
+                    document.getElementById('spiralType').value = 'dots';
+                    document.getElementById('colorMode').value = 'gradient';
+                    document.getElementById('color1').value = '#4158D0';
+                    document.getElementById('color2').value = '#C850C0';
+                    break;
+                case 'energetic':
+                    document.getElementById('speedSlider').value = 60;
+                    document.getElementById('densitySlider').value = 15;
+                    document.getElementById('thicknessSlider').value = 5;
+                    document.getElementById('spiralType').value = 'dots';
+                    document.getElementById('colorMode').value = 'rainbow';
+                    break;
+                case 'deep':
+                    document.getElementById('speedSlider').value = 10;
+                    document.getElementById('densitySlider').value = 40;
+                    document.getElementById('thicknessSlider').value = 2;
+                    document.getElementById('spiralType').value = 'wormhole';
+                    break;
+            }
+            updateAllSettings();
+            updateSpiralType();
+        }
+
+        function updateAllSettings() {
+            speed = parseInt(document.getElementById('speedSlider').value);
+            density = parseInt(document.getElementById('densitySlider').value);
+            thickness = parseInt(document.getElementById('thicknessSlider').value);
+            spiralType = document.getElementById('spiralType').value;
+            colorMode = document.getElementById('colorMode').value;
+            color1 = document.getElementById('color1').value;
+            color2 = document.getElementById('color2').value;
+            
+            document.getElementById('speedValue').textContent = speed;
+            document.getElementById('densityValue').textContent = density;
+            document.getElementById('thicknessValue').textContent = thickness;
+        }
+
+        // Event Listeners
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            speed = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = speed;
+        });
+
+        document.getElementById('densitySlider').addEventListener('input', (e) => {
+            density = parseInt(e.target.value);
+            document.getElementById('densityValue').textContent = density;
+        });
+
+        document.getElementById('thicknessSlider').addEventListener('input', (e) => {
+            thickness = parseInt(e.target.value);
+            document.getElementById('thicknessValue').textContent = thickness;
+        });
+
+        document.getElementById('color1').addEventListener('input', (e) => {
+            color1 = e.target.value;
+        });
+
+        document.getElementById('color2').addEventListener('input', (e) => {
+            color2 = e.target.value;
+        });
+
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            updateVolume(parseInt(e.target.value));
+        });
+
+        // Klavye kısayolları
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggleAnimation();
+            } else if (e.code === 'KeyR') {
+                resetSpiral();
+            } else if (e.code === 'KeyF') {
+                toggleFullscreen();
+            } else if (e.code === 'Escape') {
+                if (document.getElementById('fullscreenMode').classList.contains('active')) {
+                    toggleFullscreen();
+                }
+            }
+        });
+
+        // Başlangıç
+        window.addEventListener('load', () => {
+            drawSpiral(ctx, canvas);
+            loadStats();
+        });
+    </script>
+</body>
+</html>
