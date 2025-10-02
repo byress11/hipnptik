@@ -693,6 +693,98 @@
         .volume-icon {
             font-size: 1.3em;
         }
+
+        .background-play-controls {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-top: 30px;
+        }
+
+        .bg-play-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .bg-play-info {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.6;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .bg-play-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .bg-play-status.active {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .bg-play-status.inactive {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked + .switch-slider {
+            background-color: #667eea;
+        }
+
+        .switch input:checked + .switch-slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
@@ -883,6 +975,43 @@
                 </div>
             </div>
         </div>
+
+        <div class="background-play-controls">
+            <h3 style="margin-bottom: 15px; color: #667eea;">📱 Arka Plan Oynatma</h3>
+            
+            <div class="bg-play-toggle">
+                <div>
+                    <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Arka Planda Çalış</div>
+                    <div style="font-size: 0.85em; color: #666;">Uygulama minimize olsa da çalışmaya devam eder</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="backgroundPlayToggle" checked onchange="toggleBackgroundPlay()">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="bg-play-toggle">
+                <div>
+                    <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Ekranı Açık Tut</div>
+                    <div style="font-size: 0.85em; color: #666;">Ekranın otomatik kapanmasını engeller</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="wakeLockToggle" onchange="toggleWakeLock()">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="bg-play-info">
+                <strong>ℹ️ Bilgi:</strong><br>
+                • Arka plan oynatma mobil tarayıcılarda ve bazı masaüstü tarayıcılarda çalışır<br>
+                • Bildirim panelinden oynatma kontrollerine erişebilirsiniz<br>
+                • Ekranı açık tutma özelliği pil tüketimini artırabilir<br>
+                • Safari ve Chrome mobil için optimize edilmiştir
+                <div class="bg-play-status inactive" id="backgroundPlayStatus">
+                    🟡 Arka plan modu: Beklemede
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="fullscreen-mode" id="fullscreenMode">
@@ -919,6 +1048,11 @@
         let merger = null;
         let currentWave = 'none';
         let volume = 0.3;
+
+        // Arka plan oynatma değişkenleri
+        let backgroundPlayEnabled = true;
+        let wakeLock = null;
+        let isPageVisible = true;
 
         // Beyin dalgası frekansları
         const waveFrequencies = {
@@ -1217,10 +1351,14 @@
 
         function animate() {
             rotation += speed / 1000;
-            drawSpiral(ctx, canvas);
             
-            if (document.getElementById('fullscreenMode').classList.contains('active')) {
-                drawSpiral(fullscreenCtx, fullscreenCanvas);
+            // Arka plan modunda sadece görünürse veya arka plan oynatma açıksa çiz
+            if (isPageVisible || backgroundPlayEnabled) {
+                drawSpiral(ctx, canvas);
+                
+                if (document.getElementById('fullscreenMode').classList.contains('active')) {
+                    drawSpiral(fullscreenCtx, fullscreenCanvas);
+                }
             }
             
             if (isAnimating) {
@@ -1239,11 +1377,13 @@
                     startTimer();
                 }
                 animate();
+                updateMediaSession('playing');
             } else {
                 playPauseText.textContent = '▶️ Devam Et';
                 if (animationId) {
                     cancelAnimationFrame(animationId);
                 }
+                updateMediaSession('paused');
             }
         }
 
@@ -1591,10 +1731,225 @@
             }
         });
 
+        // ========== ARKA PLAN OYNATMA FONKSİYONLARI ==========
+
+        // Media Session API - Mobil bildirim kontrolü
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'Hipnoz Spirali',
+                    artist: 'Meditasyon & Odaklanma',
+                    album: 'Beyin Dalgası: ' + (currentWave === 'none' ? 'Sessiz' : currentWave.toUpperCase()),
+                    artwork: [
+                        { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><circle cx="256" cy="256" r="200" fill="%23667eea"/><path d="M256 56C141.1 56 56 141.1 56 256s85.1 200 200 200 200-85.1 200-200S370.9 56 256 56zm0 360c-88.4 0-160-71.6-160-160S167.6 96 256 96s160 71.6 160 160-71.6 160-160 160z" fill="white"/></svg>', sizes: '512x512', type: 'image/svg+xml' }
+                    ]
+                });
+
+                // Oynatma kontrollerini ayarla
+                navigator.mediaSession.setActionHandler('play', () => {
+                    if (!isAnimating) toggleAnimation();
+                });
+
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    if (isAnimating) toggleAnimation();
+                });
+
+                navigator.mediaSession.setActionHandler('stop', () => {
+                    resetSpiral();
+                });
+
+                // Önceki/sonraki dalga
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    const waves = ['delta', 'theta', 'alpha', 'beta', 'gamma', 'none'];
+                    const currentIndex = waves.indexOf(currentWave);
+                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : waves.length - 1;
+                    setWaveByName(waves[prevIndex]);
+                });
+
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    const waves = ['delta', 'theta', 'alpha', 'beta', 'gamma', 'none'];
+                    const currentIndex = waves.indexOf(currentWave);
+                    const nextIndex = (currentIndex + 1) % waves.length;
+                    setWaveByName(waves[nextIndex]);
+                });
+
+                console.log('✅ Media Session API başarıyla kuruldu');
+            }
+        }
+
+        function updateMediaSession(state) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = state;
+                
+                // Metadata'yı güncelle
+                if (navigator.mediaSession.metadata) {
+                    navigator.mediaSession.metadata.album = 'Beyin Dalgası: ' + (currentWave === 'none' ? 'Sessiz' : currentWave.toUpperCase());
+                }
+                
+                updateBackgroundPlayStatus();
+            }
+        }
+
+        // Dalga ismini kullanarak seç (Media Session için)
+        function setWaveByName(waveName) {
+            const waveButtons = document.querySelectorAll('.wave-btn');
+            waveButtons.forEach(btn => {
+                const waveType = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+                if (waveType === waveName) {
+                    btn.click();
+                }
+            });
+        }
+
+        // Page Visibility API - Sayfa arka planda olduğunda algıla
+        function handleVisibilityChange() {
+            isPageVisible = !document.hidden;
+            
+            if (document.hidden) {
+                console.log('📱 Sayfa arka plana geçti');
+                updateBackgroundPlayStatus('background');
+                
+                // Arka plan modunda animasyon hızını azalt (performans)
+                if (backgroundPlayEnabled && isAnimating) {
+                    console.log('🔄 Arka plan modu: Animasyon devam ediyor');
+                }
+            } else {
+                console.log('📱 Sayfa ön plana geçti');
+                updateBackgroundPlayStatus('foreground');
+                
+                // Ön plana dönünce normal hızda devam et
+                if (isAnimating) {
+                    drawSpiral(ctx, canvas);
+                }
+            }
+        }
+
+        // Wake Lock API - Ekranı açık tut
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('✅ Wake Lock aktif - Ekran açık kalacak');
+                    
+                    wakeLock.addEventListener('release', () => {
+                        console.log('🔓 Wake Lock serbest bırakıldı');
+                    });
+                    
+                    return true;
+                } catch (err) {
+                    console.error('❌ Wake Lock hatası:', err);
+                    alert('Ekranı açık tutma özelliği bu tarayıcıda desteklenmiyor veya izin verilmedi.');
+                    return false;
+                }
+            } else {
+                alert('Ekranı açık tutma özelliği bu tarayıcıda desteklenmiyor.');
+                return false;
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                try {
+                    await wakeLock.release();
+                    wakeLock = null;
+                    console.log('🔓 Wake Lock kapatıldı');
+                } catch (err) {
+                    console.error('❌ Wake Lock kapatma hatası:', err);
+                }
+            }
+        }
+
+        // Arka plan oynatma durumunu güncelle
+        function updateBackgroundPlayStatus(mode = null) {
+            const statusElement = document.getElementById('backgroundPlayStatus');
+            
+            if (!backgroundPlayEnabled) {
+                statusElement.textContent = '🔴 Arka plan modu: Kapalı';
+                statusElement.className = 'bg-play-status inactive';
+                return;
+            }
+            
+            if (mode === 'background' && isAnimating) {
+                statusElement.textContent = '🟢 Arka planda çalışıyor';
+                statusElement.className = 'bg-play-status active';
+            } else if (isAnimating) {
+                statusElement.textContent = '🟢 Aktif - Çalışıyor';
+                statusElement.className = 'bg-play-status active';
+            } else {
+                statusElement.textContent = '🟡 Hazır - Başlatmayı bekliyor';
+                statusElement.className = 'bg-play-status inactive';
+            }
+        }
+
+        // Toggle fonksiyonları
+        function toggleBackgroundPlay() {
+            backgroundPlayEnabled = document.getElementById('backgroundPlayToggle').checked;
+            
+            if (backgroundPlayEnabled) {
+                console.log('✅ Arka plan oynatma açıldı');
+                setupMediaSession();
+            } else {
+                console.log('❌ Arka plan oynatma kapatıldı');
+            }
+            
+            updateBackgroundPlayStatus();
+            
+            // LocalStorage'a kaydet
+            localStorage.setItem('backgroundPlayEnabled', backgroundPlayEnabled);
+        }
+
+        async function toggleWakeLock() {
+            const isChecked = document.getElementById('wakeLockToggle').checked;
+            
+            if (isChecked) {
+                const success = await requestWakeLock();
+                if (!success) {
+                    document.getElementById('wakeLockToggle').checked = false;
+                }
+            } else {
+                await releaseWakeLock();
+            }
+        }
+
+        // Sayfa kapanırken Wake Lock'u serbest bırak
+        document.addEventListener('visibilitychange', async () => {
+            handleVisibilityChange();
+            
+            // Sayfa gizlendiğinde ve Wake Lock aktifse, geri geldiğinde yeniden etkinleştir
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                const wakeLockToggle = document.getElementById('wakeLockToggle');
+                if (wakeLockToggle.checked) {
+                    await requestWakeLock();
+                }
+            }
+        });
+
         // Başlangıç
         window.addEventListener('load', () => {
             drawSpiral(ctx, canvas);
             loadStats();
+            
+            // Arka plan oynatma ayarlarını yükle
+            const savedBackgroundPlay = localStorage.getItem('backgroundPlayEnabled');
+            if (savedBackgroundPlay !== null) {
+                backgroundPlayEnabled = savedBackgroundPlay === 'true';
+                document.getElementById('backgroundPlayToggle').checked = backgroundPlayEnabled;
+            }
+            
+            // Media Session'ı başlat
+            if (backgroundPlayEnabled) {
+                setupMediaSession();
+            }
+            
+            updateBackgroundPlayStatus();
+            
+            console.log('🎵 Hipnoz Spirali yüklendi!');
+            console.log('📱 Arka plan oynatma:', backgroundPlayEnabled ? 'Aktif' : 'Kapalı');
+        });
+
+        // Sayfa kapatılırken cleanup
+        window.addEventListener('beforeunload', () => {
+            releaseWakeLock();
         });
     </script>
 </body>
